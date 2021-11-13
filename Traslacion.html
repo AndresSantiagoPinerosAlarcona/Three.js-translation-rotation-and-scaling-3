@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Traslación</title>
+        <style>
+            html, body { margin: 0; padding: 0; overflow: hidden; }
+            #info {
+                position: absolute;
+                padding: 10px;
+                width: 100%;
+                text-align: center;
+                color: #FFFFFF;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="info">Traslación<br/>
+        	<br/>
+
+            Con las teclas "w" y "s" muévase el eje Z<br/>
+			Con las teclas "d" y "a" muévase el eje X<br/>
+			Con las teclas "q" y "e" muévase el eje Y<br/>
+        </div>
+    <script src="js/three.min.js"></script>
+    <script>
+		var scene, aspect, camera, renderer;
+		var geometry;
+		var object;
+		var startTime = Date.now();
+		var upArrow = false; 
+		var downArrow = false;
+		var leftArrow = false;// inicializa las futuras teclas en "false"
+		var rightArrow = false;
+		var e = false;
+		var q = false;
+		init();
+		animate();
+	
+		function init(){
+			scene = new THREE.Scene();
+			aspect = window.innerWidth / window.innerHeight;
+			camera = new THREE.PerspectiveCamera( 45, aspect, 0.1, 1000);
+			renderer = new THREE.WebGLRenderer();
+			renderer.setSize( window.innerWidth, window.innerHeight );
+			document.body.appendChild( renderer.domElement );
+				  			
+			
+			var onKeyDown = function ( event ) { //al oprimir una tecla le envia "true" a la varaible
+				switch ( event.keyCode ) {//al oprimir una tecal traduce la tecla a leguanje interno (keyCode)
+					case 87: //tecla asignada
+						upArrow = true;
+						break;
+					case 83: //tecla asignada
+						downArrow = true;
+						break;
+					case 68: //tecla asignada
+						leftArrow = true;
+						break;
+					case 65://tecla asignada
+						rightArrow = true;
+						break;	
+					case 69: //tecla asignada
+						e = true;
+						break;
+					case 81://tecla asignada
+						q = true;
+						break;	
+
+				}
+			};	  
+		  			
+			var onKeyUp = function ( event ) {//al dejar de pormir una tecla le envia "false" a la varaible
+				switch ( event.keyCode ) { //al oprimir una tecal traduce la tecla a leguanje interno (keyCode)
+					case 87: //tecla asignada
+						upArrow = false; 
+						break;
+					case 83: //tecla asignada
+						downArrow = false;
+						break;
+					case 68: //tecla asignada
+						leftArrow = false;
+						break;
+					case 65: //tecla asignada
+						rightArrow = false;
+						break
+					case 69: //tecla asignada
+						e = false;
+						break;
+					case 81: //tecla asignada
+						q = false;
+						break
+				}
+			};	  	
+			
+			document.addEventListener( 'keydown', onKeyDown, false );// al oprimir una tecla...
+			document.addEventListener( 'keyup', onKeyUp, false );
+		
+							  
+			var size = 10;
+			var arrowSize = 1;
+			var divisions = size;
+			var origin = new THREE.Vector3( 0, 0, 0 );
+			var x = new THREE.Vector3( 1, 0, 0 );
+			var y = new THREE.Vector3( 0, 1, 0 );//crea los vecotres
+		  	var z = new THREE.Vector3( 0, 0, 1 );
+			var color1 = new THREE.Color( 0xFFFFFF );
+		  	var color2 = new THREE.Color( 0xBDCBFF );
+		  	var colorR = new THREE.Color( 0xAA0000 );// crea los colores
+		  	var colorG = new THREE.Color( 0x00AA00 );
+		  	var colorB = new THREE.Color( 0x0000AA );
+			var colorRd = new THREE.Color( 0x8CA4FF );
+		  	var colorGd = new THREE.Color( 0x0035FF );
+		  	var colorBd = new THREE.Color( 0x00176E );
+		  
+		  	
+		  	var axesHelper = new THREE.AxesHelper( size );
+		  	var gridHelperXY = new THREE.GridHelper( size, divisions);
+		  	var gridHelperXZ = new THREE.GridHelper( size, divisions, color2, color2 );// le da color al plano 
+		  	var gridHelperYZ = new THREE.GridHelper( size, divisions, color2, color2 );
+            
+            
+            gridHelperXY.rotateOnWorldAxis ( x, THREE.Math.degToRad(90) );
+            gridHelperXZ.rotateOnWorldAxis ( y, THREE.Math.degToRad(90) );// rota el plano
+            gridHelperYZ.rotateOnWorldAxis ( z, THREE.Math.degToRad(90) );
+            
+            
+            var arrowX = new THREE.ArrowHelper( x, origin, arrowSize, colorR );
+            var arrowY = new THREE.ArrowHelper( y, origin, arrowSize, colorG );//le da color al los vectores del origen 
+            var arrowZ = new THREE.ArrowHelper( z, origin, arrowSize, colorB );
+			
+			geometry = new THREE.BoxGeometry( 1, 1, 1 );// genera el cubo
+
+			
+			for ( var i = 0; i < geometry.faces.length; i ++ ) {
+				switch(i){
+					case 0: case 1: geometry.faces[ i ].color = colorRd; break;
+					case 2: case 3: geometry.faces[ i ].color = colorRd; break;
+					case 4: case 5: geometry.faces[ i ].color = colorGd; break;
+					case 6: case 7: geometry.faces[ i ].color = colorGd; break;
+					case 8: case 9: geometry.faces[ i ].color = colorBd; break;
+					case 10: case 11: geometry.faces[ i ].color = colorBd; break;
+				}				
+			}
+
+			 
+			
+			
+			var material = new THREE.MeshBasicMaterial( { color: color1, vertexColors: THREE.FaceColors } );
+			
+			
+			object = new THREE.Mesh( geometry, material );
+									
+		  	
+            scene.add( gridHelperXZ );
+		  	scene.add( arrowX );	
+		  	scene.add( arrowY );	
+		  	scene.add( arrowZ );	
+			scene.add( object );
+			
+			
+			camera.position.x = 5;
+			camera.position.y = 10;	 //posicion de la camara 
+		  	camera.position.z = -10;			
+		
+			}
+    
+    function animate() {
+        render();
+        requestAnimationFrame( animate );
+    }
+    
+    function render(){//En tiempo real modifica el modelo
+        var dtime = Date.now()-startTime;
+		var tx=0, ty=0, tz=0;	//inicialización
+		var sc = 1;				
+		var theta=0;
+		if(upArrow) {//auneta cada que la variable sea "true", es decir, cada que la tecla es pulsada
+			tx=0; ty=0.1; tz=0;
+		}
+		if(downArrow) {
+			tx=0; ty=-0.1; tz=0;
+		}
+		
+		if(leftArrow) {
+			tx=-0.1; ty=0; tz=0;
+		}
+		if(rightArrow) {
+			tx=0.1; ty=0; tz=0;
+		}
+
+		if(e) {
+			tx=0; ty=0; tz=-0.1;
+		}
+		if(q) {
+			tx=0; ty=0; tz=0.1;
+		}
+
+		var t = new THREE.Matrix4();//matriz de traslacion
+		t.set( 	1, 0, 0, tx,
+				0, 1, 0, ty, 
+				0, 0, 1, tz,
+				0, 0, 0, 1	);
+
+		object.applyMatrix(t);
+		object.elementsNeedUpdate = true;
+		
+        camera.lookAt( 0, 0, 0 ); //camara apuntando al origen
+        renderer.render( scene, camera );
+    }
+    </script>
+  </body>
+</html>

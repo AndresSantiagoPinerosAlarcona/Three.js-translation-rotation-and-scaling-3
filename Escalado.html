@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Escalado</title>
+        <style>
+            html, body { margin: 0; padding: 0; overflow: hidden; }
+            #info {
+                position: absolute;
+                padding: 10px;
+                width: 100%;
+                text-align: center;
+                color: #FFFFFF;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="info">Escalado <br/>
+            Con las teclas "W" y "S" escale el tamaño del cubo<br/>
+        </div>
+    <script src="js/three.min.js"></script>
+    <script>
+		var scene, aspect, camera, renderer;
+		var geometry;
+		var object;
+		var startTime = Date.now();
+				
+// inicializa las variables que guardan la información de si se estra oprimiendo una tecla
+		var scaleUp = false;
+		var scaleDown = false;
+
+		init();
+		animate();
+	
+		function init(){
+			scene = new THREE.Scene();
+			aspect = window.innerWidth / window.innerHeight;
+			camera = new THREE.PerspectiveCamera( 45, aspect, 0.1, 1000);
+			renderer = new THREE.WebGLRenderer();
+			renderer.setSize( window.innerWidth, window.innerHeight );
+			document.body.appendChild( renderer.domElement );
+				  			
+			//EVENTOS DE TECLADO
+			
+			var onKeyDown = function ( event ) {//al oprimir una tecla le envia "true" a la varaible
+				switch ( event.keyCode ) {//al oprimir una tecal traduce la tecla a leguanje interno (keyCode)
+
+
+					case 87: //tecla asignada "W"
+						scaleUp = true;
+						break;
+					case 83: //tecla asignada "S"
+						scaleDown = true;
+						break;
+
+
+				}
+			};	  
+		  			
+			var onKeyUp = function ( event ) {//al dejar de oprimir una tecla le envia "false" a la varaible
+				switch ( event.keyCode ) {//al oprimir una tecal traduce la tecla a leguanje interno (keyCode)
+
+					case 87: //tecla asignada "W"
+						scaleUp = false;
+						break;
+					case 83: //tecla asignada "S"
+						scaleDown = false;
+						break;
+				}
+			};	  	
+			
+			document.addEventListener( 'keydown', onKeyDown, false );
+			document.addEventListener( 'keyup', onKeyUp, false );
+			
+			//ELEMENTOS DE ESCENA
+							  
+			var size = 10;
+			var arrowSize = 1;
+			var divisions = size;
+			var origin = new THREE.Vector3( 0, 0, 0 );
+			var x = new THREE.Vector3( 1, 0, 0 );
+			var y = new THREE.Vector3( 0, 1, 0 );//crea los vecotres
+		  	var z = new THREE.Vector3( 0, 0, 1 );
+			var color1 = new THREE.Color( 0xFFFFFF );
+		  	var color2 = new THREE.Color( 0xBDCBFF );
+		  	var colorR = new THREE.Color( 0xAA0000 );// crea los colores
+		  	var colorG = new THREE.Color( 0x00AA00 );
+		  	var colorB = new THREE.Color( 0x0000AA );
+			var colorRd = new THREE.Color( 0x8CA4FF );
+		  	var colorGd = new THREE.Color( 0x0035FF );
+		  	var colorBd = new THREE.Color( 0x00176E );
+		  
+		  	
+		  	var axesHelper = new THREE.AxesHelper( size );
+		  	var gridHelperXY = new THREE.GridHelper( size, divisions);
+		  	var gridHelperXZ = new THREE.GridHelper( size, divisions, color2, color2 );// le da color al plano 
+		  	var gridHelperYZ = new THREE.GridHelper( size, divisions, color2, color2 );
+            
+            
+            gridHelperXY.rotateOnWorldAxis ( x, THREE.Math.degToRad(90) );
+            gridHelperXZ.rotateOnWorldAxis ( y, THREE.Math.degToRad(90) );// rota el plano
+            gridHelperYZ.rotateOnWorldAxis ( z, THREE.Math.degToRad(90) );
+            
+            
+            var arrowX = new THREE.ArrowHelper( x, origin, arrowSize, colorR );
+            var arrowY = new THREE.ArrowHelper( y, origin, arrowSize, colorG );//le da color al los vectores del origen 
+            var arrowZ = new THREE.ArrowHelper( z, origin, arrowSize, colorB );
+			
+			geometry = new THREE.BoxGeometry( 1, 1, 1 );// genera el cubo
+
+			
+			for ( var i = 0; i < geometry.faces.length; i ++ ) {
+				switch(i){
+					case 0: case 1: geometry.faces[ i ].color = colorRd; break;
+					case 2: case 3: geometry.faces[ i ].color = colorRd; break;
+					case 4: case 5: geometry.faces[ i ].color = colorGd; break;
+					case 6: case 7: geometry.faces[ i ].color = colorGd; break;
+					case 8: case 9: geometry.faces[ i ].color = colorBd; break;
+					case 10: case 11: geometry.faces[ i ].color = colorBd; break;
+				}				
+			}
+
+			 
+			
+			
+			var material = new THREE.MeshBasicMaterial( { color: color1, vertexColors: THREE.FaceColors } );
+			
+			
+			object = new THREE.Mesh( geometry, material );
+									
+		  	
+            scene.add( gridHelperXZ );
+		  	scene.add( arrowX );	
+		  	scene.add( arrowY );	
+		  	scene.add( arrowZ );	
+			scene.add( object );
+			
+			
+			camera.position.x = 5;
+			camera.position.y = 10;	 //posicion de la camara 
+		  	camera.position.z = -10;			
+		
+			}
+    
+    function animate() {
+        render();
+        requestAnimationFrame( animate );
+    }
+    
+    function render(){//En tiempo real modifica el modelo
+        var dtime = Date.now()-startTime;
+		var WW = 1;			//inicialización de la escala del cubo	
+		if(scaleUp){//aumenta cada que la variable sea "true", es decir, cada que la tecla es pulsada se produce un incremento o decremento en la variable y esto genera un cambio de escala
+			WW = 1.1;//incremento
+		}
+		if(scaleDown){
+			WW = 0.9;//decemento 
+		}
+
+		var rr = new THREE.Matrix4();//matriz de Escalado
+		rr.set( 	WW, 0, 0, 0,
+				0, WW, 0, 0, 
+				0, 0, WW, 0,
+				0, 0, 0, 1	);	
+				
+		object.applyMatrix(rr);
+		object.elementsNeedUpdate = true;
+        camera.lookAt( 0, 0, 0 );//camara apuntando al origen
+        renderer.render( scene, camera ); 
+    }
+    </script>
+  </body>
+</html>
